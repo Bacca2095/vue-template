@@ -7,7 +7,7 @@ describe('AppCard', () => {
   it('renders the card correctly', () => {
     const wrapper = mount(AppCard)
 
-    const cardWrapper = wrapper.find('.px-4.w-full.md\\:w-1\\/2.lg\\:w-1\\/4')
+    const cardWrapper = wrapper.find('.px-4')
     expect(cardWrapper.exists()).toBe(true)
 
     const cardInner = wrapper.find(

@@ -5,9 +5,11 @@ import AppCard from '@/components/cards/AppCard.vue'
 <template>
   <KeepAlive>
     <div class="place-items-center grid w-full h-full">
-      <AppCard>
-        <slot />
-      </AppCard>
+      <div class="w-full md:w-1/2 lg:w-1/4">
+        <AppCard>
+          <slot />
+        </AppCard>
+      </div>
     </div>
   </KeepAlive>
 </template>

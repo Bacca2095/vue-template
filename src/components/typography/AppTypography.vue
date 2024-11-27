@@ -30,11 +30,11 @@ const textClasses = computed(() => {
   }
 
   const colorClasses = {
-    default: 'text-zinc-800 dark:text-zinc-300', // Más gris en modo oscuro
+    default: 'text-zinc-800 dark:text-zinc-300',
     red: 'text-red-500 dark:text-red-400',
     blue: 'text-blue-500 dark:text-blue-400',
     green: 'text-green-500 dark:text-green-400',
-    gray: 'text-zinc-500 dark:text-zinc-400', // Gris tenue para modo oscuro
+    gray: 'text-zinc-500 dark:text-zinc-400',
   }
 
   return `
