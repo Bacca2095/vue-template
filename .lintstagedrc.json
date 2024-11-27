@@ -1,4 +1,0 @@
-{
-  "*.{ts,vue}": ["prettier --write", "eslint --ignore-path .gitignore --fix"],
-  "*.{test,spec}.ts": ["vitest --coverage", "eslint --ignore-path .gitignore --fix"]
-}
