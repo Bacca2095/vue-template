@@ -15,6 +15,7 @@ import AppNavbar from '@/components/navbar/AppNavbar.vue'
         ]"
       />
     </KeepAlive>
+
     <slot />
   </div>
 </template>

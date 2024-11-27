@@ -54,7 +54,6 @@ const getPrimaryKey = (row: T) => row[props.primaryKey] as string
       </thead>
 
       <tbody>
-        <!-- Loading state -->
         <template v-if="props.loading">
           <tr>
             <td colspan="100%" class="bg-zinc-100 dark:bg-zinc-700 px-6 py-4 text-center">
@@ -65,7 +64,6 @@ const getPrimaryKey = (row: T) => row[props.primaryKey] as string
           </tr>
         </template>
 
-        <!-- No data state -->
         <template v-else-if="data.length === 0">
           <tr>
             <td colspan="100%" class="bg-zinc-100 dark:bg-zinc-700 px-6 py-4 text-center">
@@ -76,7 +74,6 @@ const getPrimaryKey = (row: T) => row[props.primaryKey] as string
           </tr>
         </template>
 
-        <!-- Data rows -->
         <template v-else>
           <tr
             v-for="row in data"

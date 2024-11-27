@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import AppBreadcrumb from '@/components/breadcrumb/AppBreadcrumb.vue'
 import Pagination from '@/components/pagination/AppPagination.vue'
 import AppTable from '@/components/table/AppTable.vue'
-
-const breadcrumbItems = [{ text: 'Home' }]
 
 const headers: { text: string; key: 'color' | 'name' | 'category' | 'price' }[] = [
   { text: 'Product Name', key: 'name' },
@@ -24,7 +21,6 @@ const currentPage = 1
 </script>
 
 <template>
-  <AppBreadcrumb :items="breadcrumbItems" />
   <div class="m-8">
     <AppTable :headers="headers" :data="data" primaryKey="name" />
     <Pagination
