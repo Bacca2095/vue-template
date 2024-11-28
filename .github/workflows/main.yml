@@ -41,3 +41,14 @@ jobs:
       # 6. Run Tests
       - name: Run Unit Tests
         run: yarn test:unit
+
+      # 7. Run SonarQube Cloud Scan
+      - name: Run SonarQube Cloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # 8. Build the app
+      - name: Build the app
+        run: yarn build
