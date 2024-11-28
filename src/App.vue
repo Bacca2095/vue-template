@@ -20,5 +20,3 @@ const route = useRoute()
     </Suspense>
   </RouterView>
 </template>
-
-<style lang="scss" scoped></style>

@@ -1,9 +1,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 
-defineEmits<{
-  (e: 'click'): void
-}>()
+defineEmits(['click'])
 
 const props = defineProps<{
   size?: 'sm' | 'md' | 'lg'

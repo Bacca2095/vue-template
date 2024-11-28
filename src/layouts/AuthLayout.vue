@@ -13,5 +13,3 @@ import AppCard from '@/components/cards/AppCard.vue'
     </div>
   </KeepAlive>
 </template>
-
-<style lang="scss" scoped></style>

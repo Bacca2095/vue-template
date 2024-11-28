@@ -1,9 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div class="h-screen w-screen grid place-items-center">
+  <div class="place-items-center grid w-screen h-screen">
     <slot />
   </div>
 </template>
-
-<style lang="scss" scoped></style>

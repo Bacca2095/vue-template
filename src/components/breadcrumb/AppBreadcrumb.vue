@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
-
 import ChevronRight from '@/assets/svg/chevron-right.svg'
 import HomeIcon from '@/assets/svg/home.svg'
 
@@ -24,13 +22,13 @@ defineProps<{
         :aria-current="!item.to ? 'page' : undefined"
       >
         <template v-if="item.to">
-          <a
-            :href="item.to"
+          <RouterLink
+            :to="item.to"
             class="inline-flex items-center gap-2 font-medium text-sm text-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 dark:text-zinc-400"
           >
             <HomeIcon data-test="home-icon" class="w-4 h-4" v-if="index === 0" />
             {{ item.text }}
-          </a>
+          </RouterLink>
         </template>
         <template v-else>
           <div class="flex items-center">

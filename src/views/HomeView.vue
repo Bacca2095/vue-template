@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppCheckbox from '@/components/inputs/AppCheckbox.vue'
 import Pagination from '@/components/pagination/AppPagination.vue'
 import AppTable from '@/components/table/AppTable.vue'
 
@@ -22,6 +23,7 @@ const currentPage = 1
 
 <template>
   <div class="m-8">
+    <AppCheckbox name="verdadero" label="Hola mundo" />
     <AppTable :headers="headers" :data="data" primaryKey="name" />
     <Pagination
       :currentPage="currentPage"

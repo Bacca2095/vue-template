@@ -86,9 +86,6 @@
     "*.{vue,js,ts,jsx,tsx}": [
       "eslint --fix",
       "prettier --write"
-    ],
-    "*.test.{js,ts,vue}": [
-      "vitest related --run --coverage"
     ]
   }
 }

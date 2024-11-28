@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T extends Record<string, unknown>">
-import { defineEmits, defineProps, ref } from 'vue'
+import { ref } from 'vue'
 
 import AppTypography from '@/components/typography/AppTypography.vue'
 

@@ -24,6 +24,7 @@ export default mergeConfig(
           'src/stories/*',
           'src/types/*',
           'src/views/*',
+          'src/**/*.test.ts',
         ],
         thresholds: {
           lines: 80,

@@ -20,7 +20,6 @@ const props = defineProps<{
 const isFocused = ref(false)
 const showPassword = ref(false)
 
-// Clases base del input
 const baseInputClasses =
   'bg-zinc-50 border text-zinc-800 text-sm rounded-xl block w-full p-2.5 focus:outline-none dark:bg-zinc-600 dark:text-zinc-300'
 
@@ -30,15 +29,12 @@ const inputClasses = computed(() => {
   if (props.disabled) {
     classes += ' opacity-50 cursor-not-allowed'
   } else if (props.error) {
-    // Estilos para error
     classes +=
       ' border-red-500 text-red-600 focus:ring-red-500 focus:border-red-500 dark:border-red-400 dark:text-red-400 dark:focus:ring-red-400 dark:focus:border-red-400'
   } else if (isFocused.value) {
-    // Estilos para focus
     classes +=
       ' focus:ring-zinc-800 focus:border-zinc-800 dark:focus:ring-zinc-500 dark:focus:border-zinc-500'
   } else {
-    // Estilos predeterminados
     classes += ' border-zinc-300 dark:border-zinc-500 dark:placeholder-zinc-400'
   }
 
@@ -60,12 +56,10 @@ const { value, errorMessage } = useField(() => props.name)
 
 <template>
   <div class="relative">
-    <!-- Etiqueta del input -->
     <label v-if="label" :for="id" :class="labelClasses">
       {{ label }}
     </label>
 
-    <!-- Contenedor del input -->
     <div class="relative">
       <input
         :id="id"
