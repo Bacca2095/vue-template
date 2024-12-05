@@ -3,113 +3,86 @@ import type { Meta, StoryFn } from '@storybook/vue3'
 import AppTable from '@/components/table/AppTable.vue'
 
 export default {
-  title: 'Components/AppTable',
+  title: 'Components/Table',
   component: AppTable,
-  argTypes: {
-    headers: { control: 'object' },
-    data: { control: 'object' },
-    primaryKey: { control: 'text' },
-    hoverable: { control: 'boolean' },
-    loading: { control: 'boolean' },
-    onRowClick: { action: 'rowClick' },
-    onRowDblClick: { action: 'rowDblClick' },
+  args: {
+    columns: [
+      { key: 'name', name: 'Name', sortable: true },
+      { key: 'age', name: 'Age', sortable: true },
+      { key: 'email', name: 'Email', sortable: false },
+    ],
+    data: [
+      { id: 1, name: 'Alice', age: 30, email: 'alice@example.com' },
+      { id: 2, name: 'Bob', age: 25, email: 'bob@example.com' },
+      { id: 3, name: 'Charlie', age: 35, email: 'charlie@example.com' },
+    ],
+    fixed: false,
   },
-} as Meta<typeof AppTable>
+  argTypes: {
+    columns: {
+      description: 'Defines the columns of the table.',
+      control: { type: 'object' },
+    },
+    data: {
+      description: 'Array of rows to display in the table.',
+      control: { type: 'object' },
+    },
+    fixed: {
+      description: 'If true, columns will have fixed width.',
+      control: { type: 'boolean' },
+    },
+    'sort-change': {
+      action: 'sort-change',
+      description: 'Emitted when the sorting state changes.',
+    },
+    'row-click': {
+      action: 'row-click',
+      description: 'Emitted when a row is clicked.',
+    },
+    'row-dblclick': {
+      action: 'row-dblclick',
+      description: 'Emitted when a row is double-clicked.',
+    },
+  },
+} as Meta
 
-const Template: StoryFn<typeof AppTable> = (args) => ({
+const Template: StoryFn = (args, {}) => ({
   components: { AppTable },
   setup() {
     return { args }
   },
-  template: `<AppTable v-bind="args" @rowClick="args.onRowClick" @rowDblClick="args.onRowDblClick" />`,
+  template: `<AppTable v-bind="args" @sort-change="args['sort-change']" @row-click="args['row-click']" @row-dblclick="args['row-dblclick']" />`,
 })
 
 export const Default = Template.bind({})
-Default.args = {
-  headers: [
-    { text: 'ID', key: 'id' },
-    { text: 'Name', key: 'name' },
-    { text: 'Email', key: 'email' },
-  ],
-  data: [
-    { id: 1, name: 'John Doe', email: 'john.doe@example.com' },
-    { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com' },
-    { id: 3, name: 'Alice Johnson', email: 'alice.johnson@example.com' },
-  ],
-  primaryKey: 'id',
-  hoverable: true,
-  loading: false,
+Default.args = {}
+
+export const FixedColumns = Template.bind({})
+FixedColumns.args = {
+  fixed: true,
 }
 
-export const Loading = Template.bind({})
-Loading.args = {
-  headers: [
-    { text: 'ID', key: 'id' },
-    { text: 'Name', key: 'name' },
-    { text: 'Email', key: 'email' },
-  ],
-  data: [],
-  primaryKey: 'id',
-  hoverable: true,
-  loading: true,
-}
-
-export const Empty = Template.bind({})
-Empty.args = {
-  headers: [
-    { text: 'ID', key: 'id' },
-    { text: 'Name', key: 'name' },
-    { text: 'Email', key: 'email' },
-  ],
-  data: [],
-  primaryKey: 'id',
-  hoverable: true,
-  loading: false,
-}
-
-export const WithCustomCells = (args: unknown) => ({
-  components: { AppTable },
-  setup() {
-    return { args }
-  },
-  template: `
-    <AppTable
-      :headers="args.headers"
-      :data="args.data"
-      :primaryKey="args.primaryKey"
-      :hoverable="args.hoverable"
-      :loading="args.loading"
-      @rowClick="args.onRowClick"
-      @rowDblClick="args.onRowDblClick"
-    >
-      <template #cell-name="{ value }">
-        <span class="text-blue-600 font-bold">{{ value }}</span>
-      </template>
-      <template #cell-email="{ value }">
-        <a :href="'mailto:' + value" class="text-green-600 underline">{{ value }}</a>
-      </template>
-    </AppTable>
-  `,
-})
-
-WithCustomCells.args = {
-  headers: [
-    { text: 'ID', key: 'id' },
-    { text: 'Name', key: 'name' },
-    { text: 'Email', key: 'email' },
-  ],
-  data: [
-    { id: 1, name: 'John Doe', email: 'john.doe@example.com' },
-    { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com' },
-    { id: 3, name: 'Alice Johnson', email: 'alice.johnson@example.com' },
-  ],
-  primaryKey: 'id',
-  hoverable: true,
-  loading: false,
-  onRowClick: (row: unknown) => {
-    console.log('Row clicked:', row)
-  },
-  onRowDblClick: (row: unknown) => {
-    console.log('Row double-clicked:', row)
-  },
-}
+export const WithActionSlot = Template.bind({})
+WithActionSlot.args = {}
+WithActionSlot.decorators = [
+  () => ({
+    template: `
+      <AppTable v-bind="$props" @sort-change="sortChange" @row-click="rowClick" @row-dblclick="rowDblClick">
+        <template #actions="{ row }">
+          <button class="text-blue-500 hover:underline" @click="alert('Editing ' + row.name)">Edit</button>
+        </template>
+      </AppTable>
+    `,
+    methods: {
+      sortChange(event: unknown) {
+        console.log('Sort Change:', event)
+      },
+      rowClick(event: unknown) {
+        console.log('Row Click:', event)
+      },
+      rowDblClick(event: unknown) {
+        console.log('Row Double Click:', event)
+      },
+    },
+  }),
+]

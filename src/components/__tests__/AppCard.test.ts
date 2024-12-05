@@ -1,42 +1,112 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 
-import AppCard from '@/components/cards/AppCard.vue'
+import AppCard from '../cards/AppCard.vue'
 
-describe('AppCard', () => {
-  it('renders the card correctly', () => {
+describe('AppCard.vue', () => {
+  it('renderiza correctamente con clases base', () => {
+    // Arrange
     const wrapper = mount(AppCard)
 
-    const cardWrapper = wrapper.find('.px-4')
-    expect(cardWrapper.exists()).toBe(true)
+    // Act
+    const card = wrapper.find('div')
 
-    const cardInner = wrapper.find(
-      '.bg-white.dark\\:bg-zinc-700.shadow-lg.p-8.rounded-3xl.text-zinc-800.dark\\:text-zinc-300',
-    )
-    expect(cardInner.exists()).toBe(true)
+    // Assert
+    expect(card.exists()).toBe(true)
+    expect(card.classes()).toContain('block')
+    expect(card.classes()).toContain('p-6')
+    expect(card.classes()).toContain('rounded-3xl')
+    expect(card.classes()).toContain('shadow-lg')
+    expect(card.classes()).toContain('bg-zinc-100')
+    expect(card.classes()).toContain('dark:bg-zinc-800')
   })
 
-  it('renders slot content', () => {
-    const slotContent = '<p>This is a card</p>'
+  it('permite agregar clases personalizadas con "customClass"', () => {
+    // Arrange
+    const customClass = 'custom-class'
+    const wrapper = mount(AppCard, {
+      props: { customClass },
+    })
+
+    // Act
+    const card = wrapper.find('div')
+
+    // Assert
+    expect(card.classes()).toContain(customClass)
+  })
+
+  it('renderiza contenido en el slot "image"', () => {
+    // Arrange
+    const slotContent = '<img src="test.jpg" alt="Test Image">'
     const wrapper = mount(AppCard, {
       slots: {
-        default: slotContent,
+        image: slotContent,
       },
     })
 
-    expect(wrapper.html()).toContain(slotContent)
+    // Act
+    const slot = wrapper.find('img')
+
+    // Assert
+    expect(slot.exists()).toBe(true)
+    expect(slot.attributes('src')).toBe('test.jpg')
+    expect(slot.attributes('alt')).toBe('Test Image')
   })
 
-  it('applies the correct classes for light and dark modes', () => {
-    const wrapper = mount(AppCard)
+  it('renderiza contenido en el slot "title"', () => {
+    // Arrange
+    const slotContent = '<h1>Test Title</h1>'
+    const wrapper = mount(AppCard, {
+      slots: {
+        title: slotContent,
+      },
+    })
 
-    const cardInner = wrapper.find(
-      '.bg-white.dark\\:bg-zinc-700.shadow-lg.p-8.rounded-3xl.text-zinc-800.dark\\:text-zinc-300',
-    )
+    // Act
+    const slot = wrapper.find('h1')
 
-    expect(cardInner.classes()).toContain('bg-white')
-    expect(cardInner.classes()).toContain('dark:bg-zinc-700')
-    expect(cardInner.classes()).toContain('text-zinc-800')
-    expect(cardInner.classes()).toContain('dark:text-zinc-300')
+    // Assert
+    expect(slot.exists()).toBe(true)
+    expect(slot.text()).toBe('Test Title')
+  })
+
+  it('renderiza contenido en el slot "content"', () => {
+    // Arrange
+    const slotContent = '<p>Test Content</p>'
+    const wrapper = mount(AppCard, {
+      slots: {
+        content: slotContent,
+      },
+    })
+
+    // Act
+    const slot = wrapper.find('p')
+
+    // Assert
+    expect(slot.exists()).toBe(true)
+    expect(slot.text()).toBe('Test Content')
+  })
+
+  it('renderiza múltiples slots correctamente', () => {
+    // Arrange
+    const wrapper = mount(AppCard, {
+      slots: {
+        image: '<img src="test.jpg" alt="Test Image">',
+        title: '<h1>Test Title</h1>',
+        content: '<p>Test Content</p>',
+      },
+    })
+
+    // Act
+    const imageSlot = wrapper.find('img')
+    const titleSlot = wrapper.find('h1')
+    const contentSlot = wrapper.find('p')
+
+    // Assert
+    expect(imageSlot.exists()).toBe(true)
+    expect(titleSlot.exists()).toBe(true)
+    expect(contentSlot.exists()).toBe(true)
+    expect(titleSlot.text()).toBe('Test Title')
+    expect(contentSlot.text()).toBe('Test Content')
   })
 })

@@ -1,66 +1,109 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { RouterLink } from 'vue-router'
 
+import CloseIcon from '@/assets/svg/close.svg'
 import MenuIcon from '@/assets/svg/menu.svg'
-import VueIcon from '@/assets/svg/vue.svg'
 
-defineProps<{
-  links: { text: string; to: string }[]
-}>()
+interface Link {
+  label: string
+  href: string
+  active?: boolean
+}
+
+interface Props {
+  title: string
+  links: Link[]
+}
+
+defineProps<Props>()
 
 const isMenuOpen = ref(false)
+
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value
+}
 </script>
 
 <template>
-  <nav class="border-zinc-200 bg-zinc-50 dark:bg-zinc-800">
-    <div class="flex flex-wrap justify-between items-center p-4">
-      <div class="flex items-center gap-4">
-        <slot name="icon">
-          <VueIcon class="w-10 h-10" />
-        </slot>
-
-        <slot name="title">
-          <span class="font-semibold text-2xl text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
-            Default Title
-          </span>
+  <nav class="bg-zinc-50 dark:bg-zinc-900 w-full">
+    <div class="flex justify-between items-center mx-auto px-4 py-2">
+      <div class="flex items-center space-x-3 rtl:space-x-reverse">
+        <slot name="logo">
+          <span class="font-semibold text-2xl text-zinc-900 dark:text-white">{{ title }}</span>
         </slot>
       </div>
 
       <button
-        @click="isMenuOpen = !isMenuOpen"
-        type="button"
-        class="inline-flex justify-center items-center md:hidden hover:bg-zinc-100 dark:hover:bg-zinc-700 p-2 rounded-lg focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-600 w-10 h-10 text-sm text-zinc-500 focus:outline-none dark:text-zinc-400"
-        aria-controls="navbar-default"
+        @click="toggleMenu"
+        class="inline-flex justify-center items-center md:hidden hover:bg-zinc-100 dark:hover:bg-zinc-700 p-2 rounded-full focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-600 w-10 h-10 text-zinc-500 focus:outline-none dark:text-zinc-400"
+        aria-controls="navbar-menu"
         :aria-expanded="isMenuOpen"
       >
-        <span class="sr-only">Menu</span>
-        <MenuIcon class="w-6 h-6" />
+        <span class="sr-only">Abrir menú principal</span>
+        <component :is="isMenuOpen ? CloseIcon : MenuIcon" class="w-5 h-5" />
       </button>
 
-      <div
-        :class="{
-          hidden: !isMenuOpen,
-          'block w-full md:flex md:w-auto': isMenuOpen,
-        }"
-        class="md:block md:w-auto"
-        id="navbar-default"
-      >
-        <ul
-          class="flex md:flex-row flex-col md:space-x-3 rtl:space-x-reverse border-zinc-100 md:border-0 dark:border-zinc-700 bg-zinc-50 md:bg-zinc-50 md:dark:bg-zinc-800 dark:bg-zinc-800 mt-4 md:mt-0 p-3 md:p-0 border rounded-lg font-medium"
-        >
+      <div class="md:flex md:items-center hidden md:w-auto" id="navbar-menu-desktop">
+        <ul class="flex flex-row space-x-6 rtl:space-x-reverse md:font-medium md:text-sm">
           <li v-for="(link, index) in links" :key="index">
-            <RouterLink
-              :to="link.to"
-              class="block px-2.5 py-1.5 font-medium text-center text-sm text-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-900 dark:text-zinc-400 transition-all duration-300"
-              active-class="rounded-full bg-zinc-900 text-zinc-100 hover:bg-zinc-800 hover:text-zinc-50 
-                dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 dark:hover:text-zinc-800"
+            <a
+              :href="link.href"
+              class="block hover:bg-zinc-100 dark:hover:bg-zinc-700 px-3 py-2 rounded-full text-zinc-700 hover:text-zinc-900 dark:hover:text-white dark:text-zinc-300"
+              :class="{
+                'bg-zinc-200 dark:bg-zinc-800 dark:text-white': link.active,
+              }"
+              :aria-current="link.active ? 'page' : undefined"
             >
-              {{ link.text }}
-            </RouterLink>
+              {{ link.label }}
+            </a>
           </li>
         </ul>
       </div>
     </div>
+
+    <transition name="fade">
+      <div v-if="isMenuOpen" class="z-50 fixed inset-0 bg-zinc-50 dark:bg-zinc-900 overflow-y-auto">
+        <div class="flex justify-between items-center px-4 py-2">
+          <div class="flex items-center space-x-3 rtl:space-x-reverse">
+            <slot name="logo">
+              <span class="font-semibold text-2xl text-zinc-900 dark:text-white">{{ title }}</span>
+            </slot>
+          </div>
+          <button
+            @click="toggleMenu"
+            class="inline-flex justify-center items-center hover:bg-zinc-100 dark:hover:bg-zinc-700 p-2 rounded-full focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-600 w-10 h-10 text-zinc-500 focus:outline-none dark:text-zinc-400"
+          >
+            <span class="sr-only">Cerrar menú</span>
+            <CloseIcon class="w-5 h-5" />
+          </button>
+        </div>
+        <ul class="flex flex-col space-y-2 px-4 py-2">
+          <li v-for="(link, index) in links" :key="index">
+            <a
+              @click="toggleMenu"
+              :href="link.href"
+              class="block hover:bg-zinc-100 dark:hover:bg-zinc-700 px-3 py-2 rounded-full text-lg text-zinc-700 hover:text-zinc-900 dark:hover:text-white dark:text-zinc-300"
+              :class="{
+                'bg-zinc-200 dark:bg-zinc-800 dark:text-white': link.active,
+              }"
+              :aria-current="link.active ? 'page' : undefined"
+            >
+              {{ link.label }}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </transition>
   </nav>
 </template>
+
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

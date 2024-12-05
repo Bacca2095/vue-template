@@ -1,103 +1,151 @@
-<script setup lang="ts" generic="T extends Record<string, unknown>">
-import { ref } from 'vue'
+<script setup lang="ts">
+import { computed, ref } from 'vue'
 
-import AppTypography from '@/components/typography/AppTypography.vue'
+import ArrowDownIcon from '@/assets/svg/arrow-down.svg'
+import ArrowUpIcon from '@/assets/svg/arrow-up.svg'
+import ArrowUpDownIcon from '@/assets/svg/arrow-up-down.svg'
 
-const props = defineProps<{
-  headers: { text: string; key: keyof T }[]
-  data: T[]
-  primaryKey: keyof T
-  hoverable?: boolean
-  loading?: boolean
-}>()
+interface Column {
+  key: string
+  name: string
+  sortable?: boolean
+}
 
-const emit = defineEmits<{
-  (e: 'rowClick', row: T | null): void
-  (e: 'rowDblClick', row: T): void
-}>()
+interface RowData {
+  id: unknown
+  [key: string]: unknown
+}
 
-const selectedPrimaryKey = ref<T[keyof T] | null>(null)
+interface Props {
+  columns: Column[]
+  data: RowData[]
+  fixed?: boolean
+}
 
-const onRowClick = (row: T) => {
-  if (selectedPrimaryKey.value === row[props.primaryKey]) {
-    selectedPrimaryKey.value = null
-    emit('rowClick', null)
+const props = defineProps<Props>()
+
+const emits = defineEmits(['sort-change', 'row-click', 'row-dblclick'])
+
+const sortKey = ref<string | null>(null)
+const sortDirection = ref<'asc' | 'desc' | 'none'>('none')
+
+const handleSort = (column: Column) => {
+  if (!column.sortable) return
+  if (sortKey.value === column.key) {
+    sortDirection.value =
+      sortDirection.value === 'asc' ? 'desc' : sortDirection.value === 'desc' ? 'none' : 'asc'
   } else {
-    selectedPrimaryKey.value = row[props.primaryKey]
-    emit('rowClick', row)
+    sortKey.value = column.key
+    sortDirection.value = 'asc'
+  }
+  emits('sort-change', { key: sortKey.value, direction: sortDirection.value })
+}
+
+const getSortIcon = (column: Column) => {
+  if (sortKey.value !== column.key || sortDirection.value === 'none') {
+    return ArrowUpDownIcon
+  } else if (sortDirection.value === 'asc') {
+    return ArrowUpIcon
+  } else {
+    return ArrowDownIcon
   }
 }
 
-const onRowDblClick = (row: T) => {
-  emit('rowDblClick', row)
+const columnWidthStyle = computed(() => {
+  if (props.fixed) {
+    const percentage = 100 / props.columns.length
+    return { width: `${percentage}%` }
+  }
+  return {}
+})
+
+const selectedRowIds = ref<unknown[]>([])
+
+const handleRowClick = (row: RowData) => {
+  const index = selectedRowIds.value.indexOf(row.id)
+  if (index !== -1) {
+    selectedRowIds.value.splice(index, 1)
+  } else {
+    selectedRowIds.value.push(row.id)
+  }
+
+  emits('row-click', { id: row.id })
 }
 
-const isRowSelected = (row: T) => selectedPrimaryKey.value === row[props.primaryKey]
-
-const getPrimaryKey = (row: T) => row[props.primaryKey] as string
+const handleRowDblClick = (row: RowData) => {
+  if (!selectedRowIds.value.includes(row.id)) {
+    selectedRowIds.value.push(row.id)
+  }
+  emits('row-dblclick', { id: row.id })
+}
 </script>
 
 <template>
-  <div class="relative shadow-md rounded-xl overflow-x-auto">
-    <table class="rtl:text-right w-full text-left text-sm">
-      <thead class="bg-zinc-200 dark:bg-zinc-600">
+  <div class="relative shadow-md rounded-2xl overflow-x-auto">
+    <table
+      class="rtl:text-right w-full text-left text-sm text-zinc-500 dark:text-zinc-400"
+      :class="props.fixed ? 'table-fixed' : ''"
+    >
+      <thead
+        class="bg-zinc-100 dark:bg-zinc-700 text-xs text-zinc-700 dark:text-zinc-400 uppercase"
+      >
         <tr>
           <th
-            v-for="header in headers"
-            :key="header.key"
+            v-for="(column, index) in columns"
+            :key="index"
             scope="col"
-            class="px-6 py-3 font-semibold text-zinc-700 dark:text-zinc-300"
+            class="px-6 py-3"
+            :style="columnWidthStyle"
           >
-            <AppTypography size="md" weight="semibold">{{ header.text }}</AppTypography>
+            <div class="flex items-center">
+              <span
+                :class="column.sortable ? 'cursor-pointer select-none' : ''"
+                @click="handleSort(column)"
+              >
+                {{ column.name }}
+              </span>
+              <template v-if="column.sortable">
+                <span class="ml-1.5">
+                  <component :is="getSortIcon(column)" class="inline-block w-4 h-4" />
+                </span>
+              </template>
+            </div>
           </th>
         </tr>
       </thead>
-
       <tbody>
-        <template v-if="props.loading">
-          <tr>
-            <td colspan="100%" class="bg-zinc-100 dark:bg-zinc-700 px-6 py-4 text-center">
-              <AppTypography size="md" align="center" class="text-zinc-800 dark:text-zinc-300">
-                Loading...
-              </AppTypography>
-            </td>
-          </tr>
-        </template>
-
-        <template v-else-if="data.length === 0">
-          <tr>
-            <td colspan="100%" class="bg-zinc-100 dark:bg-zinc-700 px-6 py-4 text-center">
-              <AppTypography size="md" align="center" class="text-zinc-800 dark:text-zinc-300">
-                No data available
-              </AppTypography>
-            </td>
-          </tr>
-        </template>
-
-        <template v-else>
-          <tr
-            v-for="row in data"
-            :key="getPrimaryKey(row)"
-            :class="[
-              'bg-zinc-100 dark:bg-zinc-700',
-              hoverable && 'hover:bg-zinc-200 dark:hover:bg-zinc-600 cursor-pointer',
-              isRowSelected(row) && 'bg-zinc-300 dark:bg-zinc-500',
-            ]"
-            @click="onRowClick(row)"
-            @dblclick="onRowDblClick(row)"
-            v-memo="[row, selectedPrimaryKey]"
+        <tr
+          v-for="(row, rowIndex) in data"
+          :key="rowIndex"
+          :class="[
+            ' hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer',
+            selectedRowIds.includes(row.id)
+              ? 'bg-zinc-200 dark:bg-zinc-600'
+              : 'bg-white dark:bg-zinc-800',
+          ]"
+          @click="handleRowClick(row)"
+          @dblclick="handleRowDblClick(row)"
+        >
+          <td
+            v-for="(column, colIndex) in columns"
+            :key="colIndex"
+            class="px-6 py-4"
+            :style="columnWidthStyle"
+            :class="{
+              'font-medium text-zinc-900 whitespace-nowrap dark:text-white': colIndex === 0,
+              'text-right': colIndex === columns.length - 1,
+            }"
           >
-            <td
-              v-for="header in headers"
-              :key="header.key"
-              class="px-6 py-4 text-zinc-800 dark:text-zinc-300"
-            >
-              <slot :name="`cell-${String(header.key)}`" :row="row" :value="row[header.key]">
-                <AppTypography size="sm">{{ row[header.key] }}</AppTypography>
+            <template v-if="colIndex === columns.length - 1">
+              <slot name="actions" :row="row" :index="rowIndex">
+                {{ row[column.key] }}
               </slot>
-            </td>
-          </tr>
-        </template>
+            </template>
+            <template v-else>
+              {{ row[column.key] }}
+            </template>
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>

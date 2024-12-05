@@ -1,11 +1,20 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+interface Props {
+  customClass?: string
+}
+
+defineProps<Props>()
+
+const baseClasses =
+  'block p-6 rounded-3xl shadow-lg hover:bg-opacity-90 transition duration-200 bg-zinc-100  dark:bg-zinc-800'
+</script>
 
 <template>
-  <div class="px-4">
-    <div
-      class="bg-white dark:bg-zinc-700 shadow-lg p-8 rounded-3xl text-zinc-800 dark:text-zinc-300"
-    >
-      <slot />
+  <div :class="[baseClasses, customClass]">
+    <slot name="image" />
+    <div>
+      <slot name="title" />
+      <slot name="content" />
     </div>
   </div>
 </template>

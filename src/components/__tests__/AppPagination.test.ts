@@ -1,80 +1,120 @@
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
-import Pagination from '@/components/pagination/AppPagination.vue'
+import Paginator from '../pagination/AppPagination.vue'
 
-describe('Pagination', () => {
-  it('renders correctly with provided props', () => {
-    const wrapper = mount(Pagination, {
+describe('Paginator.vue', () => {
+  it('renderiza las páginas correctamente', () => {
+    // Arrange
+    const wrapper = mount(Paginator, {
       props: {
-        currentPage: 1,
         totalPages: 5,
-        totalItems: 50,
-        itemsPerPage: 10,
+        modelValue: 1,
       },
     })
 
-    expect(wrapper.text()).toContain('Showing 1 - 10 of 50')
-    expect(wrapper.findAll('button')).toHaveLength(7) // Previous + 5 pages + Next
+    // Act
+    const pageButtons = wrapper.findAll('button').filter((button) => {
+      const text = button.text()
+      return text && !isNaN(Number(text)) // Filtra botones con números
+    })
+
+    // Assert
+    expect(pageButtons.length).toBe(4) // 5 páginas
+    expect(pageButtons[0].text()).toBe('1') // Primera página
+    expect(pageButtons[3].text()).toBe('5') // Última página
   })
 
-  it('emits "pageChange" with correct value when a page is clicked', async () => {
-    const wrapper = mount(Pagination, {
+  it('deshabilita el botón "Página anterior" en la primera página', () => {
+    // Arrange
+    const wrapper = mount(Paginator, {
       props: {
-        currentPage: 1,
         totalPages: 5,
-        totalItems: 50,
-        itemsPerPage: 10,
+        modelValue: 1,
       },
     })
 
-    const pageButton = wrapper.findAll('button')[2]
-    await pageButton.trigger('click')
+    // Act
+    const prevButton = wrapper.find('button[aria-label="Página anterior"]')
 
-    expect(wrapper.emitted('pageChange')).toBeTruthy()
-    expect(wrapper.emitted('pageChange')?.[0]).toEqual([2])
+    // Assert
+    expect(prevButton.attributes('disabled')).toBeDefined()
   })
 
-  it('disables previous button on the first page', () => {
-    const wrapper = mount(Pagination, {
+  it('deshabilita el botón "Página siguiente" en la última página', () => {
+    // Arrange
+    const wrapper = mount(Paginator, {
       props: {
-        currentPage: 1,
         totalPages: 5,
-        totalItems: 50,
-        itemsPerPage: 10,
+        modelValue: 5,
       },
     })
 
-    const prevButton = wrapper.find('button:disabled')
-    expect(prevButton.exists()).toBe(true)
-    expect(prevButton.text()).toBe('')
+    // Act
+    const nextButton = wrapper.find('button[aria-label="Página siguiente"]')
+
+    // Assert
+    expect(nextButton.attributes('disabled')).toBeDefined()
   })
 
-  it('disables next button on the last page', () => {
-    const wrapper = mount(Pagination, {
+  it('muestra las elipsis correctamente cuando hay muchas páginas', () => {
+    // Arrange
+    const wrapper = mount(Paginator, {
       props: {
-        currentPage: 5,
-        totalPages: 5,
-        totalItems: 50,
-        itemsPerPage: 10,
+        totalPages: 10,
+        modelValue: 5,
+        maxVisiblePages: 3,
       },
     })
 
-    const nextButton = wrapper.find('button:disabled')
-    expect(nextButton.exists()).toBe(true)
-    expect(nextButton.text()).toBe('')
+    // Act
+    const ellipsis = wrapper.findAll('span')
+
+    // Assert
+    expect(ellipsis.length).toBe(2) // Elipsis previa y siguiente
+    expect(ellipsis[0].text()).toBe('…')
+    expect(ellipsis[1].text()).toBe('…')
   })
 
-  it('renders the correct range of items', () => {
-    const wrapper = mount(Pagination, {
+  it('navega a la página siguiente correctamente', async () => {
+    // Arrange
+    const onUpdateModelValue = vi.fn()
+    const wrapper = mount(Paginator, {
       props: {
-        currentPage: 2,
         totalPages: 5,
-        totalItems: 50,
-        itemsPerPage: 10,
+        modelValue: 1,
+        'onUpdate:modelValue': onUpdateModelValue,
       },
     })
 
-    expect(wrapper.text()).toContain('Showing 11 - 20 of 50')
+    const nextButton = wrapper.find('button[aria-label="Página siguiente"]')
+
+    // Act
+    await nextButton.trigger('click')
+
+    // Assert
+    expect(onUpdateModelValue).toHaveBeenCalledOnce()
+    expect(onUpdateModelValue).toHaveBeenCalledWith(2)
+  })
+
+  it('navega a la página anterior correctamente', async () => {
+    // Arrange
+    const onUpdateModelValue = vi.fn()
+    const wrapper = mount(Paginator, {
+      props: {
+        totalPages: 5,
+        modelValue: 3,
+        'onUpdate:modelValue': onUpdateModelValue,
+      },
+    })
+
+    const prevButton = wrapper.find('button[aria-label="Página anterior"]')
+
+    // Act
+    await prevButton.trigger('click')
+
+    // Assert
+    expect(onUpdateModelValue).toHaveBeenCalledOnce()
+    expect(onUpdateModelValue).toHaveBeenCalledWith(2)
   })
 })

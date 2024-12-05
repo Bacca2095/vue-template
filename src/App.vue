@@ -9,7 +9,7 @@ const route = useRoute()
 <template>
   <RouterView v-slot="{ Component }">
     <Suspense>
-      <div class="bg-zinc-50 dark:bg-zinc-800 w-screen h-screen text-zinc-800 dark:text-zinc-300">
+      <div class="bg-zinc-50 dark:bg-zinc-900 w-screen h-screen text-zinc-800 dark:text-zinc-300">
         <component :is="route.meta.layout">
           <component :is="Component"></component>
         </component>

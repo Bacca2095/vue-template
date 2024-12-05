@@ -1,6 +1,6 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "include": ["env.d.ts", "route-meta.d.ts", "src/**/*", "src/**/*.vue"],
+  "include": ["env.d.ts", "route-meta.d.ts", "manual-chunks.ts", "src/**/*", "src/**/*.vue"],
   "exclude": ["src/**/__tests__/*"],
   "compilerOptions": {
     "composite": true,

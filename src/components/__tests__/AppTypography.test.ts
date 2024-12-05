@@ -1,83 +1,132 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 
-import Typography from '@/components/typography/AppTypography.vue'
+import AppTypography from '@/components/typography/AppTypography.vue'
 
-describe('Typography', () => {
-  it('renders the default structure correctly', () => {
-    const wrapper = mount(Typography, {
+describe('AppTypography.vue', () => {
+  it('renders correctly with default props', () => {
+    const wrapper = mount(AppTypography, {
       slots: {
-        default: 'Default Text',
+        default: 'Texto por defecto',
       },
     })
-
-    const element = wrapper.find('p')
-    expect(element.exists()).toBe(true)
-    expect(element.text()).toBe('Default Text')
-    expect(element.classes()).toContain('text-base')
-    expect(element.classes()).toContain('text-left')
-    expect(element.classes()).toContain('font-normal')
-    expect(element.classes()).toContain('text-zinc-800')
+    expect(wrapper.html()).toContain('<p')
+    expect(wrapper.text()).toBe('Texto por defecto')
+    expect(wrapper.classes()).toContain('text-base')
+    expect(wrapper.classes()).toContain('font-normal')
+    expect(wrapper.classes()).toContain('text-zinc-700')
   })
 
-  it('applies size classes correctly', () => {
-    const wrapper = mount(Typography, {
-      props: { size: 'lg' },
-      slots: { default: 'Large Text' },
-    })
+  it('renders with different sizes', () => {
+    const sizes: Array<'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'> = [
+      'xs',
+      'sm',
+      'md',
+      'lg',
+      'xl',
+      '2xl',
+      '3xl',
+    ]
 
-    const element = wrapper.find('p')
-    expect(element.classes()).toContain('text-lg')
+    sizes.forEach((size) => {
+      const wrapper = mount(AppTypography, {
+        props: { size },
+        slots: {
+          default: `Texto ${size}`,
+        },
+      })
+      expect(wrapper.classes()).toContain(`text-${size}`)
+      expect(wrapper.text()).toBe(`Texto ${size}`)
+    })
   })
 
-  it('applies alignment classes correctly', () => {
-    const wrapper = mount(Typography, {
-      props: { align: 'center' },
-      slots: { default: 'Centered Text' },
-    })
+  it('renders with different text alignments', () => {
+    const alignments: Array<'left' | 'center' | 'right' | 'justify'> = [
+      'left',
+      'center',
+      'right',
+      'justify',
+    ]
 
-    const element = wrapper.find('p')
-    expect(element.classes()).toContain('text-center')
+    alignments.forEach((align) => {
+      const wrapper = mount(AppTypography, {
+        props: { align },
+        slots: {
+          default: `Texto alineado a ${align}`,
+        },
+      })
+      expect(wrapper.classes()).toContain(`text-${align}`)
+      expect(wrapper.text()).toBe(`Texto alineado a ${align}`)
+    })
   })
 
-  it('applies weight classes correctly', () => {
-    const wrapper = mount(Typography, {
-      props: { weight: 'bold' },
-      slots: { default: 'Bold Text' },
-    })
+  it('renders different HTML elements based on "as" prop', () => {
+    const elements: Array<'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'span' | 'div'> = [
+      'p',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'span',
+      'div',
+    ]
 
-    const element = wrapper.find('p')
-    expect(element.classes()).toContain('font-bold')
+    elements.forEach((element) => {
+      const slotContent = `Texto en ${element}`
+      const wrapper = mount(AppTypography, {
+        props: { as: element },
+        slots: {
+          default: slotContent,
+        },
+      })
+
+      expect(wrapper.element.tagName.toLowerCase()).toBe(element)
+
+      expect(wrapper.text()).toBe(slotContent)
+    })
   })
 
-  it('applies color classes correctly', () => {
-    const wrapper = mount(Typography, {
-      props: { color: 'red' },
-      slots: { default: 'Red Text' },
-    })
+  it('renders different font weights', () => {
+    const weights: Array<'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold'> = [
+      'normal',
+      'medium',
+      'semibold',
+      'bold',
+      'extrabold',
+    ]
 
-    const element = wrapper.find('p')
-    expect(element.classes()).toContain('text-red-500')
+    weights.forEach((weight) => {
+      const wrapper = mount(AppTypography, {
+        props: { weight },
+        slots: {
+          default: `Texto con peso ${weight}`,
+        },
+      })
+      expect(wrapper.classes()).toContain(`font-${weight}`)
+      expect(wrapper.text()).toBe(`Texto con peso ${weight}`)
+    })
   })
 
-  it('renders custom elements with the "as" prop', () => {
-    const wrapper = mount(Typography, {
-      props: { as: 'h1' },
-      slots: { default: 'Heading 1 Text' },
+  it('applies invert styles when "invert" prop is true', () => {
+    const wrapper = mount(AppTypography, {
+      props: { invert: true },
+      slots: {
+        default: 'Texto invertido',
+      },
     })
-
-    const element = wrapper.find('h1')
-    expect(element.exists()).toBe(true)
-    expect(element.text()).toBe('Heading 1 Text')
+    expect(wrapper.classes()).toContain('text-zinc-900')
+    expect(wrapper.classes()).toContain('dark:text-zinc-100')
   })
 
-  it('renders slot content correctly', () => {
-    const wrapper = mount(Typography, {
-      slots: { default: '<span class="custom-slot">Custom Slot Content</span>' },
+  it('applies custom classes', () => {
+    const customClass = 'custom-class'
+    const wrapper = mount(AppTypography, {
+      props: { customClass },
+      slots: {
+        default: 'Texto con clase personalizada',
+      },
     })
-
-    const slotContent = wrapper.find('.custom-slot')
-    expect(slotContent.exists()).toBe(true)
-    expect(slotContent.text()).toBe('Custom Slot Content')
+    expect(wrapper.classes()).toContain(customClass)
   })
 })

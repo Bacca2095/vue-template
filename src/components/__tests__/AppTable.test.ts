@@ -1,118 +1,153 @@
+// tests/unit/AppTable.spec.ts
 import { mount } from '@vue/test-utils'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
-import TableComponent from '@/components/table/AppTable.vue'
+import AppTable from '@/components/table/AppTable.vue'
 
-describe('TableComponent', () => {
-  const headers = [
-    { text: 'Name', key: 'name' },
-    { text: 'Age', key: 'age' },
-    { text: 'Country', key: 'country' },
-  ]
-  const data: Record<string, string | number>[] = [
-    { id: 1, name: 'John', age: 30, country: 'USA' },
-    { id: 2, name: 'Jane', age: 25, country: 'Canada' },
+describe('AppTable.vue', () => {
+  const columns = [
+    { key: 'name', name: 'Name', sortable: true },
+    { key: 'age', name: 'Age', sortable: true },
+    { key: 'email', name: 'Email', sortable: false },
   ]
 
-  it('renders the loading state', () => {
-    const wrapper = mount(TableComponent, {
-      props: { headers, data: [], primaryKey: 'id', loading: true },
+  const data = [
+    { id: 1, name: 'Alice', age: 30, email: 'alice@example.com' },
+    { id: 2, name: 'Bob', age: 25, email: 'bob@example.com' },
+    { id: 3, name: 'Charlie', age: 35, email: 'charlie@example.com' },
+  ]
+
+  it('renders table headers based on columns prop', () => {
+    const wrapper = mount(AppTable, {
+      props: { columns, data },
     })
-    expect(wrapper.text()).toContain('Loading...')
-    expect(wrapper.find('tbody').html()).toContain('Loading...')
+
+    const headers = wrapper.findAll('th')
+    expect(headers).toHaveLength(columns.length)
+
+    headers.forEach((th, index) => {
+      expect(th.text()).toBe(columns[index].name)
+    })
   })
 
-  it('renders the no data state', () => {
-    const wrapper = mount(TableComponent, {
-      props: { headers, data: [], primaryKey: 'id', loading: false },
-    })
-    expect(wrapper.text()).toContain('No data available')
-    expect(wrapper.find('tbody').html()).toContain('No data available')
-  })
-
-  it('renders table headers and data correctly', () => {
-    const wrapper = mount(TableComponent, {
-      props: { headers, data, primaryKey: 'id' },
+  it('renders table rows based on data prop', () => {
+    const wrapper = mount(AppTable, {
+      props: { columns, data },
     })
 
-    // Check headers
-    const headerCells = wrapper.findAll('thead th')
-    expect(headerCells).toHaveLength(headers.length)
-    headers.forEach((header, index) => {
-      expect(headerCells[index].text()).toBe(header.text)
-    })
-
-    // Check data rows
     const rows = wrapper.findAll('tbody tr')
     expect(rows).toHaveLength(data.length)
 
     rows.forEach((row, rowIndex) => {
       const cells = row.findAll('td')
-      expect(cells).toHaveLength(headers.length)
-      headers.forEach((header, colIndex) => {
-        expect(cells[colIndex].text()).toBe(String(data[rowIndex][header.key]))
+      expect(cells).toHaveLength(columns.length)
+
+      columns.forEach((key, colIndex) => {
+        expect(cells[colIndex].text()).toBe(
+          String((data[rowIndex] as Record<string, unknown>)[key.key]),
+        )
       })
     })
   })
 
-  it('emits rowClick event on row click', async () => {
-    const rowClickSpy = vi.fn()
-    const wrapper = mount(TableComponent, {
-      props: { headers, data, primaryKey: 'id' },
-      attrs: { onRowClick: rowClickSpy },
+  it('handles sorting when clicking on sortable columns', async () => {
+    const wrapper = mount(AppTable, {
+      props: { columns, data },
     })
 
-    const row = wrapper.findAll('tbody tr')[0]
-    await row.trigger('click')
-    expect(rowClickSpy).toHaveBeenCalledWith(data[0])
+    const sortableHeaders = wrapper.findAll('th span.cursor-pointer')
+
+    await sortableHeaders[0].trigger('click')
+
+    expect(wrapper.emitted('sort-change')).toHaveLength(1)
+    expect(wrapper.emitted('sort-change')![0]).toEqual([{ key: 'name', direction: 'asc' }])
+
+    await sortableHeaders[0].trigger('click')
+
+    expect(wrapper.emitted('sort-change')).toHaveLength(2)
+    expect(wrapper.emitted('sort-change')![1]).toEqual([{ key: 'name', direction: 'desc' }])
+
+    await sortableHeaders[0].trigger('click')
+
+    expect(wrapper.emitted('sort-change')).toHaveLength(3)
+    expect(wrapper.emitted('sort-change')![2]).toEqual([{ key: 'name', direction: 'none' }])
   })
 
-  it('emits rowDblClick event on row double click', async () => {
-    const rowDblClickSpy = vi.fn()
-    const wrapper = mount(TableComponent, {
-      props: { headers, data, primaryKey: 'id' },
-      attrs: { onRowDblClick: rowDblClickSpy },
-    })
-
-    const row = wrapper.findAll('tbody tr')[0]
-    await row.trigger('dblclick')
-    expect(rowDblClickSpy).toHaveBeenCalledWith(data[0])
-  })
-
-  it('highlights selected row', async () => {
-    const wrapper = mount(TableComponent, {
-      props: { headers, data, primaryKey: 'id' },
-    })
-
-    const row = wrapper.findAll('tbody tr')[0]
-    await row.trigger('click')
-
-    expect(row.classes()).toContain('bg-zinc-300')
-  })
-
-  it('deselects row on second click', async () => {
-    const wrapper = mount(TableComponent, {
-      props: { headers, data, primaryKey: 'id' },
-    })
-
-    const row = wrapper.findAll('tbody tr')[0]
-    await row.trigger('click') // Select
-    expect(row.classes()).toContain('bg-zinc-300')
-
-    await row.trigger('click') // Deselect
-    expect(row.classes()).not.toContain('bg-zinc-300')
-  })
-
-  it('renders custom slots for cells', () => {
-    const wrapper = mount(TableComponent, {
-      props: { headers, data, primaryKey: 'id' },
-      slots: {
-        'cell-name': `<template #cell-name="{ value }"><span class="custom-cell">{{ value.toUpperCase() }}</span></template>`,
-      },
+  it('handles row click and emits "row-click" event', async () => {
+    const wrapper = mount(AppTable, {
+      props: { columns, data },
     })
 
     const rows = wrapper.findAll('tbody tr')
-    const firstRowCell = rows[0].find('td .custom-cell')
-    expect(firstRowCell.text()).toBe(String(data[0].name).toUpperCase())
+
+    // Click on the first row
+    await rows[0].trigger('click')
+
+    expect(wrapper.emitted('row-click')).toHaveLength(1)
+    expect(wrapper.emitted('row-click')![0]).toEqual([{ id: 1 }])
+
+    // The first row should have the selected class
+    expect(rows[0].classes()).toContain('bg-zinc-200')
+    expect(rows[0].classes()).toContain('dark:bg-zinc-600')
+
+    // Click again to deselect
+    await rows[0].trigger('click')
+
+    expect(wrapper.emitted('row-click')).toHaveLength(2)
+    expect(wrapper.emitted('row-click')![1]).toEqual([{ id: 1 }])
+
+    // The first row should not have the selected class
+    expect(rows[0].classes()).not.toContain('bg-zinc-200')
+    expect(rows[0].classes()).not.toContain('dark:bg-zinc-600')
+  })
+
+  it('handles row double-click and emits "row-dblclick" event', async () => {
+    const wrapper = mount(AppTable, {
+      props: { columns, data },
+    })
+
+    const rows = wrapper.findAll('tbody tr')
+
+    // Double-click on the second row
+    await rows[1].trigger('dblclick')
+
+    expect(wrapper.emitted('row-dblclick')).toHaveLength(1)
+    expect(wrapper.emitted('row-dblclick')![0]).toEqual([{ id: 2 }])
+
+    // The second row should be selected
+    expect(rows[1].classes()).toContain('bg-zinc-200')
+    expect(rows[1].classes()).toContain('dark:bg-zinc-600')
+  })
+
+  it('applies fixed column widths when "fixed" prop is true', () => {
+    const wrapper = mount(AppTable, {
+      props: { columns, data, fixed: true },
+    })
+
+    const thElements = wrapper.findAll('th')
+    thElements.forEach((th) => {
+      expect(th.attributes('style')).toContain('width: 33.333333333333336%') // 100 / 3 columns
+    })
+
+    const tdElements = wrapper.findAll('td')
+    tdElements.forEach((td) => {
+      expect(td.attributes('style')).toContain('width: 33.333333333333336%')
+    })
+  })
+
+  it('does not apply fixed column widths when "fixed" prop is false or undefined', () => {
+    const wrapper = mount(AppTable, {
+      props: { columns, data },
+    })
+
+    const thElements = wrapper.findAll('th')
+    thElements.forEach((th) => {
+      expect(th.attributes('style')).toBeFalsy() // No debería haber estilos de ancho
+    })
+
+    const tdElements = wrapper.findAll('td')
+    tdElements.forEach((td) => {
+      expect(td.attributes('style')).toBeFalsy()
+    })
   })
 })

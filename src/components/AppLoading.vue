@@ -1,7 +1,3 @@
-<script setup lang="ts">
-import { DotLottieVue } from '@lottiefiles/dotlottie-vue'
-</script>
+<script setup lang="ts"></script>
 
-<template>
-  <DotLottieVue autoplay loop src="/src/assets/lottie/loading.lottie" />
-</template>
+<template>Loading...</template>

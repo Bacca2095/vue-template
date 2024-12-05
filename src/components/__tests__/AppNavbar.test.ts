@@ -1,88 +1,106 @@
 import { mount } from '@vue/test-utils'
-import { RouterLinkStub } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 
-import Navbar from '@/components/navbar/AppNavbar.vue'
+import AppNavbar from '../navbar/AppNavbar.vue'
 
-describe('Navbar', () => {
-  const mockLinks = [
-    { text: 'Home', to: '/' },
-    { text: 'About', to: '/about' },
-    { text: 'Services', to: '/services' },
-    { text: 'Contact', to: '/contact' },
-  ]
-
-  it('renders the navbar correctly', () => {
-    const wrapper = mount(Navbar, {
+describe('AppNavbar.vue', () => {
+  it('renderiza correctamente con el título y los links', () => {
+    // Arrange
+    const links = [
+      { label: 'Home', href: '/', active: true },
+      { label: 'About', href: '/about', active: false },
+      { label: 'Contact', href: '/contact', active: false },
+    ]
+    const wrapper = mount(AppNavbar, {
       props: {
-        links: mockLinks,
-      },
-      global: {
-        stubs: {
-          RouterLink: RouterLinkStub,
-        },
+        title: 'My App',
+        links,
       },
     })
 
-    const navbar = wrapper.find('nav')
-    expect(navbar.exists()).toBe(true)
+    // Act
+    const title = wrapper.find('span.font-semibold')
+    const linkElements = wrapper.findAll('a')
 
-    const links = wrapper.findAllComponents(RouterLinkStub)
-    expect(links).toHaveLength(mockLinks.length)
-    mockLinks.forEach((link, index) => {
-      expect(links[index].text()).toBe(link.text)
-      expect(links[index].props().to).toBe(link.to)
-    })
+    // Assert
+    expect(title.text()).toBe('My App')
+    expect(linkElements).toHaveLength(3)
+    expect(linkElements[0].text()).toBe('Home')
+    expect(linkElements[0].classes()).toContain('bg-zinc-200') // Link activo
   })
 
-  it('toggles menu visibility when the button is clicked', async () => {
-    const wrapper = mount(Navbar, {
+  it('abre y cierra el menú móvil al hacer clic en el botón', async () => {
+    // Arrange
+    const links = [
+      { label: 'Home', href: '/', active: true },
+      { label: 'About', href: '/about', active: false },
+      { label: 'Contact', href: '/contact', active: false },
+    ]
+    const wrapper = mount(AppNavbar, {
       props: {
-        links: mockLinks,
-      },
-      global: {
-        stubs: {
-          RouterLink: RouterLinkStub,
-        },
+        title: 'My App',
+        links,
       },
     })
 
-    const button = wrapper.find('button[aria-controls="navbar-default"]')
-    const menu = wrapper.find('#navbar-default')
+    const toggleButton = wrapper.find('button[aria-controls="navbar-menu"]')
 
-    expect(menu.classes()).toContain('hidden')
+    // Act - Abrir menú
+    await toggleButton.trigger('click')
+    let menu = wrapper.find('div.z-50') // Menú móvil
+    expect(menu.exists()).toBe(true)
 
-    await button.trigger('click')
-
-    expect(menu.classes()).not.toContain('hidden')
-
-    await button.trigger('click')
-
-    expect(menu.classes()).toContain('hidden')
+    // Act - Cerrar menú
+    await toggleButton.trigger('click')
+    menu = wrapper.find('div.z-50')
+    expect(menu.exists()).toBe(false)
   })
 
-  it('renders custom slots correctly', () => {
-    const wrapper = mount(Navbar, {
+  it('cierra el menú móvil al hacer clic en un link', async () => {
+    // Arrange
+    const links = [
+      { label: 'Home', href: '/', active: true },
+      { label: 'About', href: '/about', active: false },
+      { label: 'Contact', href: '/contact', active: false },
+    ]
+    const wrapper = mount(AppNavbar, {
       props: {
-        links: mockLinks,
+        title: 'My App',
+        links,
+      },
+    })
+
+    const toggleButton = wrapper.find('button[aria-controls="navbar-menu"]')
+
+    // Act - Abrir menú
+    await toggleButton.trigger('click')
+    const link = wrapper.find('div.z-50 a')
+
+    // Act - Hacer clic en un link
+    await link.trigger('click')
+
+    // Assert
+    const menu = wrapper.find('div.z-50')
+    expect(menu.exists()).toBe(false) // Menú debe cerrarse
+  })
+
+  it('renderiza el slot "logo" si está presente', () => {
+    // Arrange
+    const wrapper = mount(AppNavbar, {
+      props: {
+        title: 'My App',
+        links: [],
       },
       slots: {
-        icon: '<div class="custom-icon">Custom Icon</div>',
-        title: '<h1 class="custom-title">Custom Title</h1>',
-      },
-      global: {
-        stubs: {
-          RouterLink: RouterLinkStub,
-        },
+        logo: '<img src="/logo.png" alt="Logo" />',
       },
     })
 
-    const icon = wrapper.find('.custom-icon')
-    expect(icon.exists()).toBe(true)
-    expect(icon.text()).toBe('Custom Icon')
+    // Act
+    const logo = wrapper.find('img')
 
-    const title = wrapper.find('.custom-title')
-    expect(title.exists()).toBe(true)
-    expect(title.text()).toBe('Custom Title')
+    // Assert
+    expect(logo.exists()).toBe(true)
+    expect(logo.attributes('src')).toBe('/logo.png')
   })
 })

@@ -3,13 +3,13 @@ import AppCard from '@/components/cards/AppCard.vue'
 </script>
 
 <template>
-  <KeepAlive>
-    <div class="place-items-center grid w-full h-full">
-      <div class="w-full md:w-1/2 lg:w-1/4">
-        <AppCard>
+  <div class="flex justify-center items-center min-h-screen">
+    <div class="p-2 w-full max-w-sm">
+      <AppCard custom-class="m-2">
+        <template #content>
           <slot />
-        </AppCard>
-      </div>
+        </template>
+      </AppCard>
     </div>
-  </KeepAlive>
+  </div>
 </template>

@@ -1,41 +1,54 @@
-<script lang="ts" setup>
-import { computed } from 'vue'
+<script setup lang="ts">
+type ButtonSize = 'sm' | 'md' | 'lg'
 
-defineEmits(['click'])
-
-const props = defineProps<{
-  size?: 'sm' | 'md' | 'lg'
+interface Props {
   type?: 'button' | 'submit' | 'reset'
+  size?: ButtonSize
   disabled?: boolean
+  customClass?: string
+}
+
+const props = defineProps<Props>()
+
+const emits = defineEmits<{
+  (e: 'click', event: MouseEvent): void
 }>()
 
-const baseClasses = 'font-medium rounded-full focus:outline-none focus:ring-2'
-
-const themeClasses = computed(() => {
-  return `
-    text-white bg-zinc-800 hover:bg-zinc-700 focus:ring-zinc-500
-    dark:text-zinc-800 dark:bg-zinc-200 dark:hover:bg-zinc-300 dark:focus:ring-zinc-400
-  `
-})
-
-const sizeClasses = computed(() => {
-  const sizes = {
-    sm: 'text-xs px-3 py-1.5',
-    md: 'text-sm px-5 py-2.5',
-    lg: 'text-lg px-6 py-3',
+const handleClick = (event: MouseEvent) => {
+  if (!props.disabled) {
+    emits('click', event)
   }
-  return sizes[props.size || 'md']
-})
+}
 
-const buttonClasses = computed(() => {
-  return `${baseClasses} ${themeClasses.value} ${sizeClasses.value} ${
-    props.disabled ? 'opacity-50 cursor-not-allowed' : ''
-  }`
-})
+const baseClasses =
+  'font-medium text-center focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:focus:ring-opacity-50 rounded-full'
+
+const sizeClasses: Record<ButtonSize, string> = {
+  sm: 'px-3 py-2 text-xs',
+  md: 'px-3 py-2 text-sm',
+  lg: 'px-5 py-2.5 text-sm',
+}
+
+const enabledClasses =
+  'text-white bg-zinc-700 hover:bg-zinc-800 focus:ring-zinc-300 ' +
+  'dark:bg-zinc-200 dark:hover:bg-zinc-300 dark:focus:ring-zinc-400 ' +
+  'dark:text-zinc-900'
+
+const disabledClasses = 'text-white bg-gray-400 cursor-not-allowed'
 </script>
 
 <template>
-  <button :class="buttonClasses" :type="type" :disabled="disabled" @click="$emit('click')">
-    <span class="font-bold text-white dark:text-zinc-800"><slot /></span>
+  <button
+    :type="type || 'button'"
+    :class="[
+      baseClasses,
+      sizeClasses[size || 'md'],
+      disabled ? disabledClasses : enabledClasses,
+      customClass,
+    ]"
+    :disabled="disabled"
+    @click="handleClick"
+  >
+    <slot></slot>
   </button>
 </template>

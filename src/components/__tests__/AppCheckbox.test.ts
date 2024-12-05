@@ -1,86 +1,143 @@
 import { mount } from '@vue/test-utils'
-import { Form } from 'vee-validate'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { ref } from 'vue'
 
-import AppCheckbox from '@/components/inputs/AppCheckbox.vue'
+import AppCheckbox from '../inputs/AppCheckbox.vue'
 
+vi.mock('vee-validate', () => ({
+  useField: () => ({
+    value: ref(false), // Simula el estado del checkbox
+    errorMessage: ref('Error Message'), // Mensaje de error simulado
+    meta: { valid: false, touched: true }, // Estado simulado de validación
+    setTouched: vi.fn(), // Mock para la función `setTouched`
+  }),
+}))
 describe('AppCheckbox.vue', () => {
-  it('renders the checkbox with the correct label', () => {
+  it('renderiza correctamente con las propiedades por defecto', () => {
+    // Arrange
     const wrapper = mount(AppCheckbox, {
-      global: {
-        components: {
-          Form,
-        },
-      },
       props: {
-        label: 'Accept Terms',
-        name: 'terms',
-      },
-      slots: {},
-      parentComponent: {
-        template: `
-          <Form>
-            <AppCheckbox label="Accept Terms" name="terms" />
-          </Form>
-        `,
+        name: 'test-checkbox',
+        label: 'Test Label',
       },
     })
 
-    expect(wrapper.find('input[type="checkbox"]').exists()).toBe(true)
-    expect(wrapper.find('label').text()).toBe('Accept Terms')
+    // Act
+    const input = wrapper.find('input[type="checkbox"]')
+    const label = wrapper.find('label[for]')
+
+    // Assert
+    expect(input.exists()).toBe(true)
+    expect(label.text()).toBe('Test Label')
+    expect(input.attributes('id')).toBeTruthy()
+    expect(input.classes()).toContain('peer')
   })
 
-  it('updates value when checkbox is clicked', async () => {
+  it('asigna el ID generado automáticamente si no se proporciona uno', () => {
+    // Arrange
     const wrapper = mount(AppCheckbox, {
-      global: {
-        components: {
-          Form,
-        },
-      },
       props: {
-        label: 'Accept Terms',
-        name: 'terms',
-      },
-      parentComponent: {
-        template: `
-          <Form>
-            <AppCheckbox label="Accept Terms" name="terms" />
-          </Form>
-        `,
+        name: 'test-checkbox',
+        label: 'Test Label',
       },
     })
 
-    const checkbox = wrapper.find('input[type="checkbox"]')
+    // Act
+    const input = wrapper.find('input[type="checkbox"]')
 
-    expect((checkbox.element as HTMLInputElement).checked).toBe(false)
-
-    await checkbox.setValue(true)
-    expect((checkbox.element as HTMLInputElement).checked).toBe(true)
+    // Assert
+    expect(input.attributes('id')).toMatch(/^checkbox-/)
   })
 
-  it('respects the disabled prop', () => {
+  it('utiliza el ID proporcionado si existe', () => {
+    // Arrange
     const wrapper = mount(AppCheckbox, {
-      global: {
-        components: {
-          Form,
-        },
-      },
       props: {
-        label: 'Accept Terms',
-        name: 'terms',
+        name: 'test-checkbox',
+        label: 'Test Label',
+        id: 'custom-id',
+      },
+    })
+
+    // Act
+    const input = wrapper.find('input[type="checkbox"]')
+
+    // Assert
+    expect(input.attributes('id')).toBe('custom-id')
+  })
+
+  it('emite el evento "update:modelValue" cuando cambia su estado', async () => {
+    // Arrange
+    const onUpdateModelValue = vi.fn()
+    const wrapper = mount(AppCheckbox, {
+      props: {
+        name: 'test-checkbox',
+        label: 'Test Label',
+        'onUpdate:modelValue': onUpdateModelValue,
+      },
+    })
+
+    const input = wrapper.find('input[type="checkbox"]')
+
+    // Act
+    await input.setValue(true)
+
+    // Assert
+    expect(onUpdateModelValue).toHaveBeenCalledOnce()
+    expect(onUpdateModelValue).toHaveBeenCalledWith(true)
+  })
+
+  it('muestra un error cuando "hasError" es verdadero', () => {
+    // Arrange
+    const wrapper = mount(AppCheckbox, {
+      props: {
+        name: 'test-checkbox',
+        label: 'Test Label',
+      },
+    })
+
+    // Act
+    const errorMessage = wrapper.find('.text-red-500')
+
+    // Assert
+    expect(errorMessage.exists()).toBe(true)
+    expect(errorMessage.text()).toBe('Error Message') // Asegura que el mensaje de error es correcto
+  })
+
+  it('no emite eventos si está deshabilitado', async () => {
+    // Arrange
+    const onUpdateModelValue = vi.fn()
+    const wrapper = mount(AppCheckbox, {
+      props: {
+        name: 'test-checkbox',
+        label: 'Test Label',
         disabled: true,
-      },
-      parentComponent: {
-        template: `
-          <Form>
-            <AppCheckbox label="Accept Terms" name="terms" disabled />
-          </Form>
-        `,
+        'onUpdate:modelValue': onUpdateModelValue,
       },
     })
 
-    const checkbox = wrapper.find('input[type="checkbox"]')
+    const input = wrapper.find('input[type="checkbox"]')
 
-    expect((checkbox.element as HTMLInputElement).disabled).toBe(true)
+    // Act
+    await input.trigger('change')
+
+    // Assert
+    expect(onUpdateModelValue).not.toHaveBeenCalled()
+  })
+
+  it('renderiza contenido del slot por defecto como etiqueta', () => {
+    // Arrange
+    const wrapper = mount(AppCheckbox, {
+      props: { name: 'test-checkbox', label: 'Test Label' },
+      slots: {
+        default: 'Custom Slot Label',
+      },
+    })
+
+    // Act
+    const label = wrapper.find('label[for]')
+
+    // Assert
+    expect(label.text()).toBe('Custom Slot Label')
   })
 })
