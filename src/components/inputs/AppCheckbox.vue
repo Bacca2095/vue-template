@@ -3,6 +3,7 @@ import { useField } from 'vee-validate'
 import { computed, defineEmits, defineProps, ref } from 'vue'
 
 import CheckIcon from '@/assets/svg/check.svg'
+import { createUUID } from '@/utils/create-uuid'
 
 interface Props {
   name: string
@@ -20,7 +21,7 @@ const props = defineProps<Props>()
 
 const emits = defineEmits<Emits>()
 
-const generatedId = ref(props.id || `checkbox-${Math.random().toString(36).substr(2, 9)}`)
+const generatedId = ref(props.id || `checkbox-${createUUID()}`)
 
 const { value: fieldValue, errorMessage, meta, setTouched } = useField<boolean>(props.name)
 

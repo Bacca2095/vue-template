@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 
 import EyeIcon from '@/assets/svg/eye.svg'
 import EyeOffIcon from '@/assets/svg/eye-off.svg'
+import { createUUID } from '@/utils/create-uuid'
 
 type InputSize = 'sm' | 'md' | 'lg'
 
@@ -25,7 +26,7 @@ interface Emits {
 const props = defineProps<Props>()
 defineEmits<Emits>()
 
-const generatedId = ref(props.id || `input-${Math.random().toString(36).substr(2, 9)}`)
+const generatedId = ref(props.id || `input-${createUUID()}`)
 
 const { value: field, errorMessage, meta, setTouched } = useField(props.name)
 
