@@ -1,3 +1,5 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Bacca2095_vue-template&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Bacca2095_vue-template)
+
 # vue-template
 
 This template should help get you started developing with Vue 3 in Vite.
