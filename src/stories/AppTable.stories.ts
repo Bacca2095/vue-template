@@ -1,10 +1,11 @@
-import type { Meta, StoryFn } from '@storybook/vue3'
+import type { Meta, StoryObj } from '@storybook/vue3'
 
 import AppTable from '@/components/table/AppTable.vue'
 
 export default {
-  title: 'Components/Table',
+  title: 'Components/AppTable',
   component: AppTable,
+  tags: ['autodocs'],
   args: {
     columns: [
       { key: 'name', name: 'Name', sortable: true },
@@ -20,7 +21,7 @@ export default {
   },
   argTypes: {
     columns: {
-      description: 'Defines the columns of the table.',
+      description: 'Defines the columns of the table. Each column can be sortable.',
       control: { type: 'object' },
     },
     data: {
@@ -28,12 +29,12 @@ export default {
       control: { type: 'object' },
     },
     fixed: {
-      description: 'If true, columns will have fixed width.',
+      description: 'If true, columns will have a fixed width.',
       control: { type: 'boolean' },
     },
     'sort-change': {
       action: 'sort-change',
-      description: 'Emitted when the sorting state changes.',
+      description: 'Emitted when the sorting state of a column changes.',
     },
     'row-click': {
       action: 'row-click',
@@ -44,45 +45,116 @@ export default {
       description: 'Emitted when a row is double-clicked.',
     },
   },
-} as Meta
-
-const Template: StoryFn = (args, {}) => ({
-  components: { AppTable },
-  setup() {
-    return { args }
+  parameters: {
+    docs: {
+      autodocs: true,
+    },
   },
-  template: `<AppTable v-bind="args" @sort-change="args['sort-change']" @row-click="args['row-click']" @row-dblclick="args['row-dblclick']" />`,
-})
+} as Meta<typeof AppTable>
 
-export const Default = Template.bind({})
-Default.args = {}
+type Story = StoryObj<typeof AppTable>
 
-export const FixedColumns = Template.bind({})
-FixedColumns.args = {
-  fixed: true,
+export const Default: Story = {}
+
+export const FixedColumns: Story = {
+  args: {
+    fixed: true,
+  },
 }
 
-export const WithActionSlot = Template.bind({})
-WithActionSlot.args = {}
-WithActionSlot.decorators = [
-  () => ({
+export const EmptyData: Story = {
+  args: {
+    data: [],
+  },
+}
+
+export const ManyRows: Story = {
+  args: {
+    data: Array.from({ length: 50 }, (_, i) => ({
+      id: i + 1,
+      name: `User ${i + 1}`,
+      age: Math.floor(Math.random() * 60) + 18,
+      email: `user${i + 1}@example.com`,
+    })),
+  },
+}
+
+export const WithActionSlot: Story = {
+  render: (args) => ({
+    components: { AppTable },
+    setup() {
+      return { args }
+    },
     template: `
-      <AppTable v-bind="$props" @sort-change="sortChange" @row-click="rowClick" @row-dblclick="rowDblClick">
+      <AppTable v-bind="args">
         <template #actions="{ row }">
-          <button class="text-blue-500 hover:underline" @click="alert('Editing ' + row.name)">Edit</button>
+          <button class="text-blue-500 hover:underline" @click="alert('Editing ' + row.name)">
+            Edit
+          </button>
         </template>
       </AppTable>
     `,
+  }),
+}
+
+export const NonSortableColumns: Story = {
+  args: {
+    columns: [
+      { key: 'name', name: 'Name', sortable: false },
+      { key: 'age', name: 'Age', sortable: false },
+      { key: 'email', name: 'Email', sortable: false },
+    ],
+  },
+}
+
+export const RowClickInteraction: Story = {
+  render: (args) => ({
+    components: { AppTable },
+    setup() {
+      return { args }
+    },
+    template: `
+      <AppTable v-bind="args" @row-click="onRowClick">
+        <template #actions="{ row }">
+          <button class="text-blue-500 hover:underline" @click="alert('Viewing ' + row.name)">
+            View
+          </button>
+        </template>
+      `,
     methods: {
-      sortChange(event: unknown) {
-        console.log('Sort Change:', event)
-      },
-      rowClick(event: unknown) {
-        console.log('Row Click:', event)
-      },
-      rowDblClick(event: unknown) {
-        console.log('Row Double Click:', event)
+      onRowClick(event: { id: number }) {
+        alert(`Row clicked: ID ${event.id}`)
       },
     },
   }),
-]
+}
+
+export const SelectableRows: Story = {
+  args: {
+    columns: [
+      { key: 'id', name: 'ID', sortable: false },
+      { key: 'name', name: 'Name', sortable: false },
+    ],
+    data: [
+      { id: 1, name: 'Selectable Row 1' },
+      { id: 2, name: 'Selectable Row 2' },
+    ],
+  },
+}
+
+// Tabla con encabezados personalizados
+export const CustomHeader: Story = {
+  render: (args) => ({
+    components: { AppTable },
+    setup() {
+      return { args }
+    },
+    template: `
+      <AppTable v-bind="args">
+        <template #header="{ column }">
+          <span class="font-bold text-zinc-800 dark:text-zinc-200">{{ column.name.toUpperCase() }}</span>
+        </template>
+      </AppTable>
+    `,
+  }),
+}

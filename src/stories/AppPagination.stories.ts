@@ -1,67 +1,96 @@
-import type { Meta, StoryFn } from '@storybook/vue3'
+import type { Meta, StoryObj } from '@storybook/vue3'
 
-import Pagination from '@/components/pagination/AppPagination.vue'
+import Paginator from '@/components/pagination/AppPagination.vue'
 
 export default {
-  title: 'Components/AppPagination',
-  component: Pagination,
+  title: 'Components/AppPaginator',
+  component: Paginator,
+  tags: ['autodocs'], // Activa autodocumentación
+  args: {
+    totalPages: 10,
+    modelValue: 1,
+    maxVisiblePages: 5,
+  },
   argTypes: {
-    currentPage: {
-      control: 'number',
-      defaultValue: 1,
-      description: 'Current active page.',
-    },
     totalPages: {
-      control: 'number',
-      defaultValue: 5,
-      description: 'Total number of pages.',
+      description: 'Total number of pages available.',
+      control: { type: 'number' },
     },
-    totalItems: {
-      control: 'number',
-      defaultValue: 50,
-      description: 'Total number of items.',
+    modelValue: {
+      description: 'Current page (v-model).',
+      control: { type: 'number' },
     },
-    itemsPerPage: {
-      control: 'number',
-      defaultValue: 10,
-      description: 'Number of items per page.',
+    maxVisiblePages: {
+      description: 'Maximum number of visible pages in the paginator.',
+      control: { type: 'number' },
     },
-    onPageChange: {
-      action: 'pageChange',
-      description: 'Emits the new page number when a page is clicked.',
+    'update:modelValue': {
+      action: 'update:modelValue',
+      description: 'Emitted when the current page changes.',
     },
   },
-  tags: ['autodocs'],
-} as Meta
-
-const Template: StoryFn = (args, {}) => ({
-  components: { Pagination },
-  setup() {
-    return { args }
+  parameters: {
+    docs: {
+      autodocs: true, // Habilita autodocumentación
+    },
   },
-  template: '<Pagination v-bind="args" @pageChange="args.onPageChange" />',
-})
+} as Meta<typeof Paginator>
 
-export const Default = Template.bind({})
-Default.args = {
-  currentPage: 1,
-  totalPages: 5,
-  totalItems: 50,
-  itemsPerPage: 10,
+type Story = StoryObj<typeof Paginator>
+
+// Historia predeterminada
+export const Default: Story = {}
+
+// Paginador con solo 3 páginas visibles
+export const FewPages: Story = {
+  args: {
+    totalPages: 3,
+    modelValue: 1,
+    maxVisiblePages: 3,
+  },
 }
 
-export const WithMorePages = Template.bind({})
-WithMorePages.args = {
-  currentPage: 1,
-  totalPages: 10,
-  totalItems: 100,
-  itemsPerPage: 10,
+// Paginador con muchas páginas visibles
+export const ManyPagesVisible: Story = {
+  args: {
+    totalPages: 20,
+    modelValue: 10,
+    maxVisiblePages: 7,
+  },
 }
 
-export const LastPage = Template.bind({})
-LastPage.args = {
-  currentPage: 10,
-  totalPages: 10,
-  totalItems: 100,
-  itemsPerPage: 10,
+// Paginador deshabilitado (primer y último botón no clickeables)
+export const DisabledNavigation: Story = {
+  args: {
+    totalPages: 1,
+    modelValue: 1,
+    maxVisiblePages: 1,
+  },
+}
+
+// Paginador con inicio en una página avanzada
+export const AdvancedStart: Story = {
+  args: {
+    totalPages: 10,
+    modelValue: 5,
+    maxVisiblePages: 5,
+  },
+}
+
+// Paginador con estado personalizado (clases adicionales)
+export const CustomStyles: Story = {
+  render: (args) => ({
+    components: { Paginator },
+    setup() {
+      return { args }
+    },
+    template: `
+      <Paginator v-bind="args" class="bg-blue-50 border border-blue-200 rounded-lg p-4" />
+    `,
+  }),
+  args: {
+    totalPages: 10,
+    modelValue: 1,
+    maxVisiblePages: 5,
+  },
 }

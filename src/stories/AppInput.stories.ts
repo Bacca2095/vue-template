@@ -1,85 +1,149 @@
-import type { Meta, StoryFn } from '@storybook/vue3'
+import type { Meta, StoryObj } from '@storybook/vue3'
 
 import AppInput from '@/components/inputs/AppInput.vue'
 
 export default {
   title: 'Components/AppInput',
   component: AppInput,
+  tags: ['autodocs'],
+  args: {
+    name: 'example-input',
+    id: 'input-1',
+    label: 'Default Input',
+    placeholder: 'Type something...',
+    size: 'md',
+    disabled: false,
+    type: 'text',
+    customClass: '',
+  },
   argTypes: {
+    name: {
+      description: 'Name attribute for the input. Used by `vee-validate`.',
+      control: { type: 'text' },
+    },
+    id: {
+      description: 'Optional ID for the input. Defaults to a generated ID.',
+      control: { type: 'text' },
+    },
     label: {
-      control: 'text',
-      description: 'Etiqueta para el campo de entrada',
+      description: 'Label displayed above the input.',
+      control: { type: 'text' },
     },
     placeholder: {
-      control: 'text',
-      description: 'Texto de marcador dentro del campo',
+      description: 'Placeholder text for the input.',
+      control: { type: 'text' },
     },
-    name: {
-      control: 'text',
-      description: 'Nombre en el campo de entrada',
-    },
-
-    type: {
-      control: 'select',
-      options: ['text', 'password', 'email', 'number'],
-      description: 'Tipo de entrada',
+    size: {
+      description: 'Defines the size of the input.',
+      control: { type: 'select' },
+      options: ['sm', 'md', 'lg'],
     },
     disabled: {
-      control: 'boolean',
-      description: 'Deshabilitar el campo',
+      description: 'If true, disables the input.',
+      control: { type: 'boolean' },
     },
-    error: {
-      control: 'text',
-      description: 'Mensaje de error para el campo',
+    type: {
+      description: 'Defines the input type, e.g., `text`, `password`.',
+      control: { type: 'select' },
+      options: ['text', 'password', 'email', 'number'],
+    },
+    customClass: {
+      description: 'Custom classes to apply to the input.',
+      control: { type: 'text' },
+    },
+    'update:modelValue': {
+      action: 'update:modelValue',
+      description: 'Emitted when the input value changes.',
     },
   },
-  tags: ['autodocs'],
+  parameters: {
+    docs: {
+      autodocs: true, // Habilita autodocumentación
+    },
+  },
 } as Meta<typeof AppInput>
 
-const Template: StoryFn<typeof AppInput> = (args) => ({
-  components: { AppInput },
-  setup() {
-    return { args }
+type Story = StoryObj<typeof AppInput>
+
+// Historia predeterminada
+export const Default: Story = {
+  args: {
+    label: 'Default Input',
+    placeholder: 'Enter text...',
   },
-  template: `<AppInput v-bind="args" />`,
-})
-
-export const Default = Template.bind({})
-Default.args = {
-  label: 'Default Input',
-  placeholder: 'Enter your text',
-  type: 'text',
-
-  disabled: false,
-  error: '',
 }
 
-export const Password = Template.bind({})
-Password.args = {
-  label: 'Password Input',
-  placeholder: 'Enter your password',
-  type: 'password',
-
-  disabled: false,
-  error: '',
+// Input deshabilitado
+export const Disabled: Story = {
+  args: {
+    label: 'Disabled Input',
+    placeholder: 'Cannot type here...',
+    disabled: true,
+  },
 }
 
-export const Disabled = Template.bind({})
-Disabled.args = {
-  label: 'Disabled Input',
-  placeholder: 'Cannot enter text',
-  type: 'text',
-
-  disabled: true,
-  error: '',
+// Tamaños de input
+export const Small: Story = {
+  args: {
+    label: 'Small Input',
+    placeholder: 'Small size...',
+    size: 'sm',
+  },
 }
 
-export const WithError = Template.bind({})
-WithError.args = {
-  label: 'Error Input',
-  placeholder: 'Enter your text',
-  type: 'text',
+export const Medium: Story = {
+  args: {
+    label: 'Medium Input',
+    placeholder: 'Medium size...',
+    size: 'md',
+  },
+}
 
-  disabled: false,
-  error: 'This field is required',
+export const Large: Story = {
+  args: {
+    label: 'Large Input',
+    placeholder: 'Large size...',
+    size: 'lg',
+  },
+}
+
+// Input con error
+export const WithError: Story = {
+  render: (args) => ({
+    components: { AppInput },
+    setup() {
+      return { args }
+    },
+    template: `
+      <AppInput v-bind="args" />
+    `,
+    data() {
+      return {
+        meta: { valid: false, touched: true },
+        errorMessage: 'This field is required.',
+      }
+    },
+  }),
+  args: {
+    label: 'Input with Error',
+    placeholder: 'Field with error...',
+  },
+}
+
+// Input tipo contraseña
+export const Password: Story = {
+  args: {
+    label: 'Password Input',
+    placeholder: 'Enter your password...',
+    type: 'password',
+  },
+}
+
+// Input con clase personalizada
+export const CustomClass: Story = {
+  args: {
+    label: 'Custom Styled Input',
+    placeholder: 'Custom styles applied...',
+    customClass: 'border-blue-500 focus:ring-blue-300',
+  },
 }
